@@ -63,7 +63,7 @@
 			 * If user sends insert request, this code returns one-element array with new created Task.id.
 			 */
 			case "insert":
-				if(isset($_POST["content"]) === false)
+				if(isset($_POST["content"]) === false || trim($_POST["content"]) === "")
 				{
 					return false;
 				}
