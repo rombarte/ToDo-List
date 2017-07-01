@@ -367,4 +367,4 @@ var app =
 	content: Array()
 };
 
-app.init("ToDO List", "en");
+app.init("ToDo List", "en");
