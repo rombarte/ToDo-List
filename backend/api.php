@@ -1,0 +1,223 @@
+<?php
+	/**
+	 * Simple API to connection with SQLite database (or MySQL) for ToDo List application.
+	 * @author Bartłomiej Romanek <poczta@rombarte.pl>
+	 */
+	header('Access-Control-Allow-Origin: localhost');
+	header('Access-Control-Allow-Methods: GET, POST');
+	header("Access-Control-Allow-Headers: X-Requested-With");
+	header('Content-type: application/json');
+ 	error_reporting(0);
+	
+	/**
+	 * This function try to start connection with database and prepare it to work.
+	 * @param string $connectionString String uses to creating connection. It's the same parameter, which uses PDO class in constructor.
+	 * @return bool Returns true if connection working or false otherwise.
+	 */
+	function openConnection($connectionString)
+	{
+		try
+		{
+			$connection = new PDO($connectionString);
+			$connection->query("CREATE TABLE IF NOT EXISTS Task (id VARCHAR(32) PRIMARY KEY NOT NULL, content VARCHAR(200) NOT NULL, is_checked BOOLEAN NOT NULL, order_number INT NOT NULL);");
+			return $connection;
+		} 
+		catch(PDOException $exception)
+		{
+			return false;
+		}
+	}
+	
+	/**
+	 * Here we have script entry point. Script does operation according to user request.
+	 * @param string $connectionString String uses to creating connection. It's the same parameter, which uses PDO class in constructor.
+	 * @return bool|mixed Returns false if request is invalid or exist connection problem and returns some elements if request is valid.
+	 */
+	function init($connectionString)
+	{
+		$connection = openConnection($connectionString);
+		if($connection === false)
+		{
+			return false;
+		}
+		switch($_REQUEST["operation"])
+		{
+			/**
+			 * If user sends select request, this code returns array with Task objects.
+			 * Task includes information from database: Task.id, Task.content, Task.is_checked and Task.order_number.  
+			 */
+			case "select":
+				$query = $connection->prepare("SELECT * FROM Task ORDER BY order_number ASC");
+				$query->execute();
+				if($query->errorCode() == 0)
+				{
+					return $query->fetchAll(PDO::FETCH_ASSOC);
+				}
+				else
+				{
+					return false;
+				}
+				break;
+				
+			/**
+			 * If user sends insert request, this code returns one-element array with new created Task.id.
+			 */
+			case "insert":
+				if(isset($_POST["content"]) === false)
+				{
+					return false;
+				}
+				$tid = md5(microtime());
+				$query = $connection->prepare("INSERT INTO Task VALUES (:in_tid, :in_content, 0, (SELECT COALESCE(MAX(t.order_number), 0) FROM Task AS t)+1)");
+				$query->bindParam(":in_tid", $tid);
+				$query->bindParam(":in_content", $_POST["content"]);
+				$query->execute();
+								
+				if($query->errorCode() == 0)
+				{
+					return array("id" => $tid);
+				}
+				else
+				{
+					return false;
+				}
+				break;
+				
+			/**
+			 * If user sends order-up request, this code returns bool variable with operation status.
+			 * Status is true when tasks have changed order numbers or false, when operation is not completed.
+			 */
+			case "order-up":
+				if(isset($_POST["id1"]) === false || isset($_POST["id2"]) === false)
+				{
+					return false;
+				}
+
+				$query1 = $connection->prepare("SELECT order_number FROM Task WHERE id = :in_id2");
+				$query1->bindParam(":in_id2", $_POST["id2"]);			
+				$query1->execute();
+				$order_number = $query1->fetch()[0];
+
+				$query2 = $connection->prepare("UPDATE Task SET order_number = order_number+1 WHERE order_number >= :in_order");
+				$query2->bindParam(":in_order", $order_number);			
+				$query2->execute();
+
+				$query3 = $connection->prepare("UPDATE Task SET order_number = :in_order WHERE id = :in_id1");
+				$query3->bindParam(":in_id1", $_POST["id1"]);
+				$query3->bindParam(":in_order", $order_number);			
+				$query3->execute();
+
+				if($query3->errorCode() == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+				
+			/**
+			 * If user sends order-down request, this code returns bool variable with operation status.
+			 * Status is true when tasks have changed order numbers or false, when operation is not completed.
+			 */
+			case "order-down":
+				if(isset($_POST["id1"]) === false || isset($_POST["id2"]) === false)
+				{
+					return false;
+				}
+
+				$query1 = $connection->prepare("SELECT order_number FROM Task WHERE id = :in_id2");
+				$query1->bindParam(":in_id2", $_POST["id2"]);			
+				$query1->execute();
+				$order_number = $query1->fetch()[0];
+
+				$query2 = $connection->prepare("UPDATE Task SET order_number = order_number-1 WHERE order_number <= :in_order");
+				$query2->bindParam(":in_order", $order_number);			
+				$query2->execute();
+				
+				$query3 = $connection->prepare("UPDATE Task SET order_number = :in_order WHERE id = :in_id1");
+				$query3->bindParam(":in_id1", $_POST["id1"]);
+				$query3->bindParam(":in_order", $order_number);			
+				$query3->execute();
+
+				if($query3->errorCode() == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+			
+			/**
+			 * If user sends check request, this code returns bool variable with operation status.
+			 * Status is true when task has changed Task.is_checked attribute in database or false otherwise.
+			 */
+			case "check":
+				if(isset($_POST["id"]) === false)
+				{
+					return false;
+				}
+				$query = $connection->prepare("UPDATE Task SET is_checked = (NOT is_checked) WHERE id= :in_id");
+				$query->bindParam(":in_id", $_POST["id"]);
+				
+				$query->execute();
+				if($query->errorCode() == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+				
+			/**
+			 * If user sends delete request, this code returns bool variable with operation status.
+			 * Status is true when task has been deleted or false otherwise.
+			 */
+			case "delete":
+				if(isset($_POST["id"]) === false)
+				{
+					return false;
+				}
+				$query = $connection->prepare("DELETE FROM Task WHERE id=:in_id");
+				$query->bindParam(":in_id", $_POST["id"]);
+				$query->execute();
+				
+				if($query->errorCode() == 0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}						
+				break;
+				
+			default:
+				break;
+		}
+		$connection = NULL;
+	}
+	
+	$status = init("sqlite:tasks.sqlite");
+	
+	if($status === false)
+	{
+		$response["success"] = false;
+	}
+	else if($status === true)
+	{
+		$response["success"] = true;
+	}
+	else
+	{
+		$response = $status;
+		$response["success"] = true;
+	}
+	echo json_encode($response);
+	
+?>

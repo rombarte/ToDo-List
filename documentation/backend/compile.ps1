@@ -1,0 +1,1 @@
+php phpdoc -d junior-recruitment-task\backend -t junior-recruitment-task\documentation\backend

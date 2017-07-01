@@ -1,0 +1,4 @@
+Options -Indexes
+
+RewriteEngine On
+RewriteRule ^api/(.*)/(.*)$ api.php?operation=$1&$2 [QSA]

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css?family=Lato');
+
+*
+{
+	box-sizing: border-box;
+	font-family: 'Lato', sans-serif;
+	font-size: 1.4rem;
+	margin: 0;
+	padding: 0;
+	text-decoration: none;
+}
+
+html
+{
+	/* When we set root font-size to 62.5%, then 10px = 1.0rem exactly. */ 
+	font-size: 62.5%;
+}
+
+body
+{
+	background: rgb(233, 240, 244);
+}
+
+/**
+ *  Row customization
+ */
+#list-table
+{
+	background: rgb(255, 255, 255);
+	display: table;
+	position: absolute;
+	width: 32.0rem;
+}
+
+#list-table .list-row
+{
+	border-color: rgb(230, 235, 237);
+	border-style: none none solid none;
+	border-width: 0.1rem;
+	display: block;
+	line-height: 3.0rem;
+	width: 100%;
+}
+
+#list-table .list-row:last-of-type
+{
+	border-style: none;
+}
+
+#list-table .list-head
+{
+	background: rgb(46, 54, 65);
+	color: rgb(218, 228, 235);
+}
+
+/**
+ *  Columns customization
+ */
+ #list-table .list-row .list-col
+{
+	border-color: rgb(242, 227, 223);
+	border-width: 0.1rem;
+	height: 3.0rem;
+	display: inline-block;
+	padding: 0 1.0rem;	
+	vertical-align: bottom;
+}
+
+ #list-table .list-head .list-col
+{
+	border-color: rgb(69, 79, 92);
+	height: 3.5rem;
+	padding: 0.25rem 1.0rem;	
+}
+
+#list-table .list-row .list-col:nth-child(3n+1)
+{
+	border-style: none solid none none;
+	cursor: pointer;
+	margin: 0 0.15rem 0 0;
+	width: 3.0rem;
+	vertical-align: bottom;
+}
+
+#list-table .list-row .list-col:nth-child(3n+2)
+{
+	border-style: none none none solid;
+	cursor: move;
+	margin: 0 0 0 0.15rem;
+	width: 25.0rem;
+}
+
+#list-table .list-row .list-col:nth-child(3n+3)
+{
+	border-style: none;
+	cursor: pointer;
+	float: right;
+	margin: 0 0.2rem 0 0;
+	width: 3.0rem;
+	vertical-align: bottom;
+}
+
+#list-table .list-head .list-col
+{
+	cursor: default !important;
+}
+
+#list-table .list-row input.list-col
+{
+	cursor: text !important;
+}
+
+/**
+ *  Active elements customization
+ */
+.task-unchecked
+{
+	background-image: url('../../assets/unchecked.png');
+	background-size: 0.9rem 0.9rem;
+	background-position: 0.105rem 0.105rem;
+	background-repeat: no-repeat;
+    background-position: center; 
+}
+ 
+.task-checked
+{
+	background-image: url('../../assets/checked.png');
+	background-size: 0.9rem 0.9rem;
+	background-position: 0.105rem 0.105rem;
+	background-repeat: no-repeat;
+    background-position: center; 
+}
+
+.task-new
+{
+	background-image: url('../../assets/add.png');
+	background-size: 0.8rem 0.8rem;
+	background-position: 0.11rem 0.11rem;
+	background-repeat: no-repeat;
+    background-position: center; 
+}
+
+.delete-active
+{
+	background-image: url('../../assets/delete-active.png');
+	background-size: 1.1rem 1.2rem;
+	background-position: 0.095rem 0.09rem;
+	background-repeat: no-repeat;
+    background-position: center; 
+}
+ 
+.delete-unactive
+{
+	background-image: url('../../assets/delete-unactive.png');
+	background-size: 1.1rem 1.2rem;
+	background-position: 0.095rem 0.09rem;
+	background-repeat: no-repeat;
+    background-position: center; 
+}
+
+.task-done
+{
+	color: #9eb2c0;
+	text-decoration: line-through;
+}
+ 
+.task-todo
+{
+	color: #2e3641;
+}
